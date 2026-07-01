@@ -1,4 +1,5 @@
 import { formatOpenAIError } from "../utils/openaiErrors";
+import { prepareAudioForWhisper } from "../utils/audioConvert";
 
 const OPENAI_BASE = import.meta.env.DEV ? "/api/openai" : "https://api.openai.com";
 
@@ -24,14 +25,6 @@ function getAuthHeaders(contentTypeJson = true) {
   return headers;
 }
 
-function extensionFromMime(mime = "") {
-  if (mime.includes("webm")) return "webm";
-  if (mime.includes("mp4") || mime.includes("aac") || mime.includes("m4a")) return "mp4";
-  if (mime.includes("ogg")) return "ogg";
-  if (mime.includes("wav")) return "wav";
-  return "webm";
-}
-
 export function hasOpenAIKey() {
   return Boolean(import.meta.env.VITE_OPENAI_API_KEY);
 }
@@ -43,13 +36,7 @@ export async function transcribeAudio(blob, language = "es", signal = null) {
     );
   }
 
-  if (!blob || blob.size === 0) {
-    throw new Error("La grabación está vacía. Graba al menos unos segundos de audio.");
-  }
-
-  const mime = blob.type || "audio/webm";
-  const ext = extensionFromMime(mime);
-  const file = new File([blob], `recording.${ext}`, { type: mime });
+  const file = await prepareAudioForWhisper(blob);
 
   const form = new FormData();
   form.append("file", file);

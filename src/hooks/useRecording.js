@@ -3,6 +3,7 @@ import {
   requestMicrophoneStream,
   createAudioContext,
   getSupportedMimeType,
+  resolveBlobMimeType,
   isRecordingSupported,
   getMicrophoneErrorMessage,
 } from "../utils/media";
@@ -131,7 +132,7 @@ export function useRecording(notify) {
       mr.onstop = () => {
         setTimeout(() => stopSpeechRecognition(), 400);
 
-        const blobType = mimeTypeRef.current || mr.mimeType || "audio/webm";
+        const blobType = resolveBlobMimeType(mr.mimeType, mimeTypeRef.current);
         const blob = new Blob(chunksRef.current, { type: blobType });
         setAudioBlob(blob);
         setAudioURL((prev) => {
@@ -162,8 +163,14 @@ export function useRecording(notify) {
   }, [notify, cleanupStream, startSpeechRecognition, stopSpeechRecognition]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRef.current?.state !== "inactive") {
-      mediaRef.current?.stop();
+    const mr = mediaRef.current;
+    if (mr && mr.state !== "inactive") {
+      try {
+        mr.requestData();
+      } catch {
+        /* algunos navegadores no implementan requestData */
+      }
+      mr.stop();
     }
     setRecording(false);
   }, []);

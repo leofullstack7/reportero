@@ -39,24 +39,59 @@ export function isRecordingSupported() {
   );
 }
 
+export function isIOS() {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+export function isMobileDevice() {
+  return isIOS() || /Android/i.test(navigator.userAgent);
+}
+
 export function getSupportedMimeType() {
   if (typeof MediaRecorder === "undefined") return "";
 
-  const types = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/mp4",
-    "audio/aac",
-    "audio/ogg;codecs=opus",
-    "audio/ogg",
-    "",
-  ];
+  // iOS Safari graba en MP4; forzar ese formato evita blobs incompatible con Whisper.
+  const types = isIOS()
+    ? [
+        "audio/mp4",
+        "audio/aac",
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+        "",
+      ]
+    : [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/aac",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+        "",
+      ];
 
   for (const type of types) {
     if (!type || MediaRecorder.isTypeSupported(type)) return type;
   }
 
   return "";
+}
+
+export function resolveBlobMimeType(recorderMimeType, preferredMime) {
+  const fromRecorder = (recorderMimeType || "").split(";")[0].trim();
+  const fromPreferred = (preferredMime || "").split(";")[0].trim();
+
+  if (fromRecorder && fromRecorder !== "application/octet-stream") {
+    return fromRecorder;
+  }
+  if (fromPreferred && fromPreferred !== "application/octet-stream") {
+    return fromPreferred;
+  }
+  return isIOS() ? "audio/mp4" : "audio/webm";
 }
 
 export async function requestMicrophoneStream() {

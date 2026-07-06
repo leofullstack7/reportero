@@ -313,7 +313,6 @@ Responde preguntas sobre la reunión, extrae información específica, o ayuda c
               startRecording={startRecording}
               stopRecording={stopRecording}
               transcribeAudio={transcribeAudio}
-              transcribeWithBrowser={() => transcribeAudio(true)}
               generateSummary={generateSummary}
             />
           )}

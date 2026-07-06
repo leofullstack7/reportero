@@ -17,7 +17,6 @@ export function RecordTab({
   startRecording,
   stopRecording,
   transcribeAudio,
-  transcribeWithBrowser,
   generateSummary,
 }) {
   const showTranscribeCta = audioBlob && !recording;
@@ -127,8 +126,7 @@ export function RecordTab({
               lineHeight: 1.6,
             }}
           >
-            Tu grabación está lista. Transcríbela con Whisper AI o usa la opción gratuita del
-            navegador.
+            Tu grabación está lista. Pulsa el botón para transcribirla.
           </div>
           <div
             style={{
@@ -149,24 +147,8 @@ export function RecordTab({
               disabled={loading.transcript}
             >
               <Icon d={icons.fileText} size={18} stroke="#fff" />
-              {loading.transcript ? "Transcribiendo…" : "Transcribir (Whisper)"}
+              {loading.transcript ? "Transcribiendo…" : "Transcribir"}
             </button>
-            {speechSupported && (
-              <button
-                style={{
-                  ...s.btn("ghost"),
-                  fontSize: 15,
-                  padding: "14px 24px",
-                  borderColor: "rgba(34,197,94,0.4)",
-                  color: "#86efac",
-                }}
-                onClick={transcribeWithBrowser}
-                disabled={loading.transcript}
-              >
-                <Icon d={icons.fileText} size={17} />
-                Transcribir gratis (navegador)
-              </button>
-            )}
           </div>
           {liveTranscript && (
             <div
